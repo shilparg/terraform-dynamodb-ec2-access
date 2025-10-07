@@ -285,7 +285,60 @@ chmod +x verify.sh
 
 - SSH connects to EC2
 - AWS CLI returns a list of items from `shilpakk-bookinventory`
-- Confirms IAM role and policy are working
 
 ---
+
+## 🧾 Summary: End-to-End DynamoDB Access via EC2
+
+### 1. Create S3 Bucket for Terraform State
+Stores your infrastructure state remotely for collaboration and auditability.
+
+```bash
+aws s3 mb s3://shilpakk-terraform-state --region us-east-1
+```
+
+---
+
+### 2. Create DynamoDB Table
+Defines a table with composite keys (`ISBN` as hash, `Genre` as range) and on-demand billing.
+
+```bash
+aws dynamodb create-table \
+  --table-name shilpakk-bookinventory \
+  --attribute-definitions AttributeName=ISBN,AttributeType=S AttributeName=Genre,AttributeType=S \
+  --key-schema AttributeName=ISBN,KeyType=HASH AttributeName=Genre,KeyType=RANGE \
+  --billing-mode PAY_PER_REQUEST \
+  --region us-east-1
+```
+
+---
+
+### 3. Seed Items into DynamoDB
+Adds two sample records for verification and testing.
+
+```bash
+aws dynamodb put-item --table-name shilpakk-bookinventory \
+  --item '{"ISBN": {"S": "978-0132350884"}, "Genre": {"S": "Software"}}' \
+  --region us-east-1
+
+aws dynamodb put-item --table-name shilpakk-bookinventory \
+  --item '{"ISBN": {"S": "978-0262033848"}, "Genre": {"S": "AI"}}' \
+  --region us-east-1
+```
+
+---
+
+### 4. Verify Access from EC2
+Runs a shell script that SSHs into your EC2 instance and scans the DynamoDB table.
+
+```bash
+chmod +x verify.sh
+./verify.sh
+```
+
+> This confirms that your EC2 instance has the correct IAM role and can read from DynamoDB using AWS CLI.
+
+---
+
+
 
