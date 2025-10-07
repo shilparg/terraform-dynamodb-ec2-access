@@ -3,7 +3,8 @@ data "aws_iam_policy_document" "dynamodb_read" {
     actions = [
       "dynamodb:List*",
       "dynamodb:Get*",
-      "dynamodb:DescribeTable"
+      "dynamodb:DescribeTable",
+      "dynamodb:Scan"
     ]
     resources = [module.dynamodb.table_arn]
   }
